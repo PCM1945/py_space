@@ -1,5 +1,5 @@
-#sizey  -20 to 700
-#sizex 0- 680
+# sizey  -20 to 700
+# sizex 0- 680
 # ************space game*****************
 # import libs
 import math
@@ -13,24 +13,31 @@ screen = pygame.display.set_mode((width, height))
 # setting key array
 keys = [False, False, False, False, False]
 # setting initial x,y player position
-playerpos = [100.00, 100.00]
+playerpos = [100, 100]
+enemypos = [680, 100]
 correction = 0
 
 
 def main():
-    # list to keep the coordinates of missiles
-    projectiles = []
-
     # loading player resource
     player = pygame.image.load("resources\ship_hero.png")
+    enemy = pygame.image.load("resources\meteoro.gif")
     shot = pygame.image.load("resources\ire.png")
-    background = pygame.image.load("resources\scene.jpg")
+    pygame.display.flip()
+    # draw background
+
     # loop forever
     while 1:
         # clear the screen before drawing again
-        screen.fill(0)
+        screen.fill(1)
         # draw the screen elements
         screen.blit(player, (playerpos, playerpos))
+        screen.blit(enemy, enemypos)
+        """
+        for x in range(width):
+            for y in range(height):
+                screen.blit(background, (x * 100, y * 100))
+                """
         # update the screen
         pygame.display.flip()
         # loop through the events
@@ -56,20 +63,24 @@ def main():
             if keys[3]:
                 playerpos[0] += 20
             if keys[4]:
-               #*********logic to fire ******
+            # *******logic to fire ******
                 # changing playerpos to firepos
                 fire_position = playerpos
+                print(playerpos)
                 # protecting fire_position values
                 valx = fire_position[0]
                 valy = fire_position[1]
-               # print("valx:" + str(valx))
+            # print("valx:" + str(valx))
             # ADD THE NEW POSITION TO VALX
                 while valx < 680:
                     valx = valx + 20
-                   # screen.blit(background, valx, valy)
+            # screen.blit(background, valx, valy)
                     screen.blit(shot, (valx+100, valy+90))
-                    pygame.display.flip()
+                    pygame.display.update()
                     screen.fill(1)
+                    if valx + 110 == enemypos[0] + 110 and valy + 110 == enemypos[1] + 110:
+                        print("hit")
+
                     if valx > 700:
                         valx = 0
             if event.type == pygame.KEYUP:
@@ -83,8 +94,6 @@ def main():
                     keys[2] = False
                 if event.key == pygame.K_RIGHT:
                     keys[3] = False
-                    # Moving player
-                projectiles.clear()
                 if event.type == pygame.QUIT:
                     # if it is quit the game
                     pygame.quit()
