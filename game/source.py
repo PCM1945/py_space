@@ -1,104 +1,100 @@
-# sizey  -20 to 700
-# sizex 0- 680
 # ************space game*****************
 # import libs
-import math
 import pygame
-from pygame.locals import *
+
+
+class Ship(object):
+    def __init__(self, x, y, width, height, speed):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.speed = speed
+        self.image = pygame.image.load("resources\ship_hero.png")
+
+    def draw(self, win):
+        win.blit(self.image, (self.x, self.y))
+
+
+class Projectile(object):
+    def __init__(self, x, y, speed):
+        self.speed = speed
+        self.x = x
+        self.y = y
+        self.image = pygame.image.load("resources\ire.png")
+
+    def draw(self, win):
+        win.blit(self.image, (self.x, self.y))
+
+
+class EnemyShip(object):
+    def __init__(self, x, y, width, height, speed):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.speed = speed
+        self.image = pygame.image.load("resources\meteoro.png")
 
 # initialize screen
 pygame.init()
-width, height = 1000, 1000
-screen = pygame.display.set_mode((width, height))
-# setting key array
-keys = [False, False, False, False, False]
+screen_width, screen_height = 1000, 1000
+screen = pygame.display.set_mode((screen_width, screen_height))
+
+# ********* Player *********
 # setting initial x,y player position
-playerpos = [100, 100]
+playerpos_x, playerpos_y = 100, 100
+player_width, player_height = 150, 150
+player_speed = 20
+player_image = pygame.image.load("resources\ship_hero.png")
+
+heroShip = Ship(playerpos_x, playerpos_y, player_width,
+                player_height, player_speed)
+
+# ********* Projectile *********
+bullet_speed = 20
+bullets = []
+# setting key array
+keys = []
 enemypos = [680, 100]
-correction = 0
+vel = 20
+# loading player resource
+enemy = pygame.image.load("resources\meteoro.gif")
 
+# loop forever
+while 1:
+    # clear the screen before drawing again
+    pygame.time.delay(100)
+    screen.fill(1)
+    # draw the screen elements
+    screen.blit(heroShip.image, (heroShip.x, heroShip.y))
+    screen.blit(enemy, enemypos)
+    # update the screen
+    pygame.display.update()
+    for bullet in bullets:
+        if bullet.x < 1000 and bullet.y > 0:
+            bullet.x += bullet.speed  # moves the bullet
+        else:
+            bullets.pop(bullets.index(bullet))  # removes the bullet
 
-def main():
-    # loading player resource
-    player = pygame.image.load("resources\ship_hero.png")
-    enemy = pygame.image.load("resources\meteoro.gif")
-    shot = pygame.image.load("resources\ire.png")
-    pygame.display.flip()
-    # draw background
+    # check if the event is a key button
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+    keys = pygame.key.get_pressed()
 
-    # loop forever
-    while 1:
-        # clear the screen before drawing again
-        screen.fill(1)
-        # draw the screen elements
-        screen.blit(player, (playerpos, playerpos))
-        screen.blit(enemy, enemypos)
-        """
-        for x in range(width):
-            for y in range(height):
-                screen.blit(background, (x * 100, y * 100))
-                """
-        # update the screen
-        pygame.display.flip()
-        # loop through the events
-        for event in pygame.event.get():
-            # check if the event is a key button
-            if event.type == pygame.KEYDOWN:
-                if event.key == K_UP:
-                    keys[0] = True
-                if event.key == K_LEFT:
-                    keys[1] = True
-                if event.key == K_DOWN:
-                    keys[2] = True
-                if event.key == K_RIGHT:
-                    keys[3] = True
-                if event.key == K_SPACE:
-                    keys[4] = True
-            if keys[0]:
-                playerpos[1] -= 20
-            if keys[2]:
-                playerpos[1] += 20
-            if keys[1]:
-                playerpos[0] -= 20
-            if keys[3]:
-                playerpos[0] += 20
-            if keys[4]:
-            # *******logic to fire ******
-                # changing playerpos to firepos
-                fire_position = playerpos
-                print(playerpos)
-                # protecting fire_position values
-                valx = fire_position[0]
-                valy = fire_position[1]
-            # print("valx:" + str(valx))
-            # ADD THE NEW POSITION TO VALX
-                while valx < 680:
-                    valx = valx + 20
-            # screen.blit(background, valx, valy)
-                    screen.blit(shot, (valx+100, valy+90))
-                    pygame.display.update()
-                    screen.fill(1)
-                    if valx + 110 == enemypos[0] + 110 and valy + 110 == enemypos[1] + 110:
-                        print("hit")
+    if keys[pygame.K_UP] and heroShip.y > heroShip.speed:
+        heroShip.y -= heroShip.speed
+    if keys[pygame.K_DOWN] and heroShip.y < screen_width - heroShip.width - heroShip.speed:
+        heroShip.y += heroShip.speed
+    if keys[pygame.K_LEFT] and heroShip.x > heroShip.speed:
+        heroShip.x -= heroShip.speed
+    if keys[pygame.K_RIGHT] and heroShip.x < screen_height - heroShip.height - heroShip.speed:
+        heroShip.x += heroShip.speed
+    if keys[pygame.K_SPACE]:
+        print("fire")
+        bullets.append(Projectile(heroShip.x+ 150, heroShip.y + 100, bullet_speed))
 
-                    if valx > 700:
-                        valx = 0
-            if event.type == pygame.KEYUP:
-                if event.key == K_SPACE:
-                    keys[4] = False
-                if event.key == pygame.K_UP:
-                    keys[0] = False
-                if event.key == pygame.K_LEFT:
-                    keys[1] = False
-                if event.key == pygame.K_DOWN:
-                    keys[2] = False
-                if event.key == pygame.K_RIGHT:
-                    keys[3] = False
-                if event.type == pygame.QUIT:
-                    # if it is quit the game
-                    pygame.quit()
-                    exit(0)
-
-
-if __name__ == '__main__':
-    main()
+    for bullet in bullets:
+        bullet.draw(screen)
+        pygame.display.update()
