@@ -12,6 +12,7 @@ class Ship(object):
         self.width = width
         self.height = height
         self.speed = speed
+
         self.image = pygame.image.load(r'resources\ship_hero.png')
         self.hitbox = (self.x, self.y - self.height + self.width, self.height, 150)
 
