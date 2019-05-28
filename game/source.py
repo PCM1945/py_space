@@ -2,6 +2,8 @@
 # import libs
 import pygame
 import random
+
+
 # ***********************game classes**************************************
 
 
@@ -12,6 +14,7 @@ class Ship(object):
         self.width = width
         self.height = height
         self.speed = speed
+        self.life = 100
         self.image = pygame.image.load(r'resources\ship_hero.png')
         self.hitbox = (self.x, self.y - self.height + self.width, self.height, 150)
 
@@ -22,7 +25,7 @@ class Ship(object):
 
     def hit(self):
         print("hero hit")
-        return True
+        return 1
 
 
 class Projectile(object):
@@ -43,6 +46,7 @@ class EnemyShip(object):
         self.width = width
         self.height = height
         self.speed = speed
+        self.center =(self.x/2, self.y/2)
         self.image = pygame.image.load(r'resources\meteoro.gif')
         self.hitbox = (self.x, self.y - 100 + self.width, self.height, 100)
 
@@ -50,10 +54,7 @@ class EnemyShip(object):
         win.blit(self.image, (self.x, self.y))
         self.hitbox = (self.x, self.y - 100 + self.width, self.height, 100)
         pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
-
-    def speed_gen(self):
-        self.speed = random.randint(1, 10)
-        return self.speed
+        self.center = (self.x/2, self.y/2)
 
     def move(self):
         if self.x > -110 and self.speed > 0:
@@ -61,6 +62,8 @@ class EnemyShip(object):
 
     def hit(self):
         print("enemy hit")
+        return 1
+
 
 # ******************** end game classes
 # initialize screen
@@ -74,7 +77,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 # setting initial x,y player position
 playerpos_x, playerpos_y = 100, 100
 player_width, player_height = 150, 150
-player_speed = 10
+player_speed = 30
 player_image = pygame.image.load(r'resources\ship_hero.png')
 
 heroShip = Ship(playerpos_x, playerpos_y, player_width,
@@ -86,17 +89,24 @@ bullet_speed = 50
 bullets = []
 # ******************************
 
+heroh = 0
+
 # **********Enemy***************
-enemy_speed = 10
+enemy_speed = 20
 new_x = 100  # initialising new_X
 enemy_y = 800
 
 # meteor = EnemyShip(650, 100, 111, 109, 10)
 enemys = []
 # *******************************
+
+# *********general use variables********
 # setting key array
 keys = []
-#bullet_count = 0
+# bullet_count = 0
+
+score = 0
+font = pygame.font.SysFont("comicsans", 30, True)
 # loop forever
 while 1:
     # *********updates the screen*************
@@ -108,10 +118,10 @@ while 1:
     heroShip.draw(screen)
     pygame.display.update()
 
-# *****generates random positions for the enemys to appear on the screen******************
+    # *****generates random positions for the enemys to appear on the screen******************
     for x in range(5):
         pos_index = random.randint(1, 4)
-        #print(pos_index)
+        # print(pos_index)
         if pos_index == 1:
             new_x = 100
         if pos_index == 2:
@@ -120,7 +130,7 @@ while 1:
             new_x = 500
         if pos_index == 4:
             new_x = 700
-        #print(new_x)
+        # print(new_x)
     for bullet in bullets:
         if bullet.x < 1000 and bullet.y > 0:
             # print(bullet.x)
@@ -130,19 +140,36 @@ while 1:
             # bullet_count -= 1
     # destroy the enemy if it is out of the screen
     for meteor in enemys:
-        if meteor.x < -100:
-            enemys.pop(enemys.index(meteor))
-        else:
-            meteor.move()
+        try:
+            if meteor.x < -100:
+                enemys.pop(enemys.index(meteor))
+            else:
+                meteor.move()
+        except:
+            print("error in enemy list")
     if len(enemys) < 5:
-        enemys.append(EnemyShip(enemy_y, new_x,  111, 109, enemy_speed))
+        enemys.append(EnemyShip(enemy_y, new_x, 111, 109, enemy_speed))
     # *********************enemy hit detection************************
     for meteor in enemys:
         for bullet in bullets:
             if bullet.y < meteor.hitbox[1] + meteor.hitbox[3] and bullet.y > meteor.hitbox[1]:  # Checks x coords
                 if bullet.x > meteor.hitbox[0] and bullet.x < meteor.hitbox[0] + meteor.hitbox[2]:  # Checks y coords
                     bullets.pop(bullets.index(bullet))  # removes bullet from bullet list
-                    meteor.hit() # calls enemy hit method
+                    if meteor.hit() == 1:  # if enemy get hit destroy object
+                        try:
+                            enemys.pop(enemys.index(meteor))
+                        except:
+                            print("error")
+                        score += 10
+    # ********************* Hero hit detection*************************
+    for meteor in enemys:
+        if heroShip.hitbox[1] < meteor.hitbox[1] + meteor.hitbox[3] and heroShip.hitbox[1] + heroShip.hitbox[3] > meteor.hitbox[1]:
+            if heroShip.hitbox[0] + heroShip.hitbox[2] > meteor.hitbox[0] and heroShip.hitbox[0] < meteor.hitbox[0] + meteor.hitbox[2]:
+                heroShip.hit()
+                score -= 5
+                if heroShip.hit() == 1:
+                    heroh += 1
+                    print(heroh)
     # ********************button event check***************************
     # check if the event is a key button
     for event in pygame.event.get():
@@ -163,7 +190,9 @@ while 1:
         bullets.append(Projectile(heroShip.x + 150, heroShip.y + 100, bullet_speed))
         #  bullet_count += 1
 
-# **************** updates the screen with the  assets**********************************
+    # **************** updates the screen with the  assets**********************************
+    text = font.render("Score: " + str(score), 1, (255, 255, 255))  # Arguments are: text, anti-aliasing, color
+    screen.blit(text, (390, 10))
     for meteor in enemys:
         meteor.draw(screen)
         pygame.display.update()
