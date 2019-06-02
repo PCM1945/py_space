@@ -16,11 +16,11 @@ class Ship(object):
         self.speed = speed
         self.life = 100
         self.image = pygame.image.load(r'resources\ship_hero.png')
-        self.hitbox = (self.x, self.y - self.height + self.width, self.height, 150)
-
+        self.hitbox = (self.x, self.y - self.height + self.width, self.height, 120)
+        self.life = 100
     def draw(self, win):
         win.blit(self.image, (self.x, self.y))
-        self.hitbox = (self.x, self.y - self.height + self.width, self.height, 150)
+        self.hitbox = (self.x, self.y - self.height + self.width+20, self.height, 120)
         pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
     def hit(self):
@@ -52,7 +52,7 @@ class EnemyShip(object):
 
     def draw(self, win):
         win.blit(self.image, (self.x, self.y))
-        self.hitbox = (self.x, self.y - 100 + self.width, self.height, 100)
+        self.hitbox = (self.x, self.y - 100 + self.width - 20, self.height, 110)
         pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
         self.center = (self.x/2, self.y/2)
 
@@ -76,7 +76,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 # ********* Player *********
 # setting initial x,y player position
 playerpos_x, playerpos_y = 100, 100
-player_width, player_height = 150, 150
+player_width, player_height = 130, 140
 player_speed = 30
 player_image = pygame.image.load(r'resources\ship_hero.png')
 
@@ -165,11 +165,10 @@ while 1:
     for meteor in enemys:
         if heroShip.hitbox[1] < meteor.hitbox[1] + meteor.hitbox[3] and heroShip.hitbox[1] + heroShip.hitbox[3] > meteor.hitbox[1]:
             if heroShip.hitbox[0] + heroShip.hitbox[2] > meteor.hitbox[0] and heroShip.hitbox[0] < meteor.hitbox[0] + meteor.hitbox[2]:
-                heroShip.hit()
-                score -= 5
                 if heroShip.hit() == 1:
-                    heroh += 1
-                    print(heroh)
+                    enemys.pop(enemys.index(meteor))
+                    heroShip.life -= 10
+                    print(heroShip.life)
     # ********************button event check***************************
     # check if the event is a key button
     for event in pygame.event.get():
